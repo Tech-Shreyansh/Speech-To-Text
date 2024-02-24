@@ -92,7 +92,7 @@ const SpeechRecognitionComponent: React.FC<SpeechRecognitionComponentProps> = ()
                     Start Recording
                 </button>
             )}
-            {transcription && <p className="mb-4 text-lg px-4 md:w-2/5">{transcription}</p>}
+            {transcription && <p className="mb-4 text-lg px-4 md:w-2/5 text-center">{transcription}</p>}
             {isListening && (
                 <div className="flex flex-col items-center h-full">
                     <svg width="600" height="100">
