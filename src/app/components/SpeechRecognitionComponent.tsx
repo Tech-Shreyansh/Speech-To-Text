@@ -7,7 +7,7 @@ interface SpeechRecognitionComponentProps {}
 const SpeechRecognitionComponent: React.FC<SpeechRecognitionComponentProps> = () => {
   const [transcription, setTranscription] = useState<string>('');
   const [isListening, setIsListening] = useState<boolean>(false);
-  const [averageIntensity, setAverageIntensity] = useState<number>(0);
+  const [waveformData, setWaveformData] = useState<number[]>([]);
   let analyser: AnalyserNode;
   let bufferLength: number;
   let dataArray: Uint8Array;
@@ -19,7 +19,7 @@ const SpeechRecognitionComponent: React.FC<SpeechRecognitionComponentProps> = ()
       sum += dataArray[i];
     }
     const avgIntensity = (sum / bufferLength / 255) * 10;
-    setAverageIntensity(avgIntensity);
+    setWaveformData(prevData => [...prevData.slice(-200), avgIntensity]); // Keep last 200 data points
     requestAnimationFrame(updateVoiceIntensity);
   };
 
@@ -64,6 +64,11 @@ const SpeechRecognitionComponent: React.FC<SpeechRecognitionComponentProps> = ()
     recognition.start();
   };
 
+  const renderWaveform = () => {
+    const pathData = waveformData.map((intensity, index) => `${index * 3},${50 - intensity * 20}`).join(" ");
+    return <polyline points={pathData} fill="none" stroke="#3182ce" strokeWidth="2" />;
+  };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-200">
       {!isListening && (
@@ -71,13 +76,12 @@ const SpeechRecognitionComponent: React.FC<SpeechRecognitionComponentProps> = ()
           Start Recording
         </button>
       )}
-      {transcription && <p className="mb-4 text-lg">{transcription}</p>}
+      {transcription && <p className="mb-4 text-lg px-4 md:w-2/5">{transcription}</p>}
       {isListening && (
-        <div className="flex flex-col items-center">
-          {/* <p className="mb-2 text-lg">Voice Intensity: {averageIntensity.toFixed(2)}</p> */}
-          <div className="relative w-64 h-4 bg-blue-200 rounded-lg overflow-hidden">
-            <div className="absolute inset-0 bg-blue-500 rounded-lg" style={{ width: `${averageIntensity * 10}%` }} />
-          </div>
+        <div className="flex flex-col items-center h-full">
+          <svg width="600" height="100">
+            {renderWaveform()}
+          </svg>
         </div>
       )}
     </div>
